@@ -7,8 +7,9 @@ public class lexicalAnalysis {
     public static final String ANSI_RED = "\u001B[31m";
     public static final String ANSI_BLUE = "\u001B[34m";
     public static final String ANSI_CYAN = "\u001B[36m";
-    public static final String ANSI_GREEN = "\u001B[35m";
+    public static final String ANSI_GREEN = "\u001B[37m";
     public static final String ANSI_YELLOW = "\u001B[33m";
+    public static final String ANSI_MAGENTA = "\u001B[35m";
 
     static private Map<Integer, Map<String, TreeSet<Integer>>> Transition = new TreeMap<>();
 
@@ -16,16 +17,21 @@ public class lexicalAnalysis {
         FinalStates.add(0);
         FinalStates.add(1);
         FinalStates.add(2);
-        FinalStates.add(3);
-        FinalStates.add(5);
-        FinalStates.add(7);
+        FinalStates.add(4);
+        FinalStates.add(6);
         FinalStates.add(8);
+        FinalStates.add(10);
+        FinalStates.add(11);
+        FinalStates.add(12);
+        FinalStates.add(13);
     }
 
     static private void FillReservedWords(LinkedHashSet<String> ReservedWords) {
         ReservedWords.add("const");
         ReservedWords.add("func");
         ReservedWords.add("var");
+        ReservedWords.add("int");
+        ReservedWords.add("char");
     }
 
     static private void FillSeperators(LinkedHashSet<String> Seperators) {
@@ -49,6 +55,14 @@ public class lexicalAnalysis {
         for (int i=0;i<10;i++){
             String number = String.valueOf(i);
             Numbers.add(number);
+        }
+    }
+
+    static private void FillFloatNumbers(LinkedHashSet<String> FloatNumbers){
+        FloatNumbers.add(".");
+        for (int i=0;i<10;i++){
+            String number = String.valueOf(i);
+            FloatNumbers.add(number);
         }
     }
 
@@ -80,6 +94,8 @@ public class lexicalAnalysis {
         Comment.add("--");
         Comment.add("\t");
         Comment.add(" ");
+        Comment.add("#");
+        Comment.add("&");
         Comment.add("_");
         Comment.add("\n");
     }
@@ -100,6 +116,28 @@ public class lexicalAnalysis {
         Comment.add("*/");
     }
 
+    static private void FillString(LinkedHashSet <String> string ){
+        string.add("\"");
+        string.add("_");
+        for (int i=0;i<26;i++){
+            String big= String.valueOf((char)('A'+i));
+            String small= String.valueOf((char)('a'+i));
+            string.add(big);
+            string.add(small);
+        }
+    }
+
+    static private void FillCharacter(LinkedHashSet <String> character ){
+        character.add("'");
+        character.add("_");
+        for (int i=0;i<26;i++){
+            String big= String.valueOf((char)('A'+i));
+            String small= String.valueOf((char)('a'+i));
+            character.add(big);
+            character.add(small);
+        }
+    }
+
     static private void FillAlphabet(HashSet<LinkedHashSet<String>> Alphabet, LinkedHashSet<String> Lexem) {
         Alphabet.add(Lexem);
     }
@@ -116,7 +154,7 @@ public class lexicalAnalysis {
     }
 
     static private void show_Edges(HashSet<LinkedHashSet<String>> Alphabet) {
-        int i = 0,c = 0,k=0;
+        int i = 0,c = 0;
         for (LinkedHashSet<String> ClassLexem : Alphabet) {
             if (i == 0) {
                 for (String word : ClassLexem) {
@@ -124,8 +162,7 @@ public class lexicalAnalysis {
                     System.out.printf("(" + 0 + ",%s)-> " + 0 + " \n", word);
                 }
                 i=i+1;
-            }
-            else if (i == 4 || i==6) {
+            } else if (i == 3 || i==5 ) {
                 for (String word : ClassLexem) {
                     int size = ClassLexem.size();
                     if (c == 0) {
@@ -143,26 +180,46 @@ public class lexicalAnalysis {
                 }
                 i=i+2;
                 c=0;
-            }
-//            else if (i==6){
-//                for (String word : ClassLexem) {
-//                    int size = ClassLexem.size();
-//                    if (k == 0) {
-//                        add_Edge(0, i, word);
-//                        System.out.printf("(" + 0 + ",%s)-> " + i + " \n", word);
-//                        k=k+1;
-//                    } else if (k==size-1) {
-//                        add_Edge(i, i + 1, word);
-//                        System.out.printf("(" + i + ",%s)-> " + (i + 1) + " \n", word);
-//                    } else{
-//                        add_Edge(i, i, word);
-//                        System.out.printf("(" + i + ",%s)-> " + i + " \n", word);
-//                        k=k+1;
-//                    }
-//                }
-//                i=i+2;
-//            }
-            else {
+            } else if (i == 7 || i==9 ) {
+                String close ="";
+                for (String word : ClassLexem) {
+                    int size = ClassLexem.size();
+                    if (c == 0) {
+                        close=word;
+                        add_Edge(0, i, word);
+                        System.out.printf("(" + 0 + ",%s)-> " + i + " \n", word);
+                        c=c+1;
+                    } else if (c == size-1) {
+                        add_Edge(i, i + 1, close);
+                        System.out.printf("(" + i + ",%s)-> " + (i + 1) + " \n", close);
+                    } else {
+                        add_Edge(i, i, word);
+                        System.out.printf("(" + i + ",%s)-> " + i + " \n", word);
+                        c=c+1;
+                    }
+                }
+                i=i+2;
+                c=0;
+            } else if (i==11){
+                String point="";
+                for (String word : ClassLexem){
+                    if(c==0){
+                        add_Edge(i, i+1, word);
+                        System.out.printf("(" + i + ",%s)-> " + (i+1) + " \n", word);
+                        c=c+1;
+                    }else {
+                        add_Edge(0,i,word);
+                        add_Edge(i,i,word);
+                        add_Edge(i+1,i+1,word);
+                        System.out.printf("(%d,%s)-> %d\n",0, word,i);
+                        System.out.printf("(" + i + ",%s)-> " + i + " \n", word);
+                        System.out.printf("(" + (i + 1) + ",%s)-> " + (i + 1) + " \n", word);
+                        c=c+1;
+                    }
+                }
+                i=i+2;
+                c=0;
+            } else {
                 for (String word : ClassLexem) {
                     add_Edge(0, i, word);
                     System.out.printf("(" + 0 + ",%s)-> " + i + " \n", word);
@@ -184,8 +241,8 @@ public class lexicalAnalysis {
         LinkedHashSet<String> Comment2 = new LinkedHashSet<>();
         FillComment2(Comment2);
 
-        LinkedHashSet<String> Numbers = new LinkedHashSet<>();
-        FillNumbers(Numbers);
+//        LinkedHashSet<String> Numbers = new LinkedHashSet<>();
+//        FillNumbers(Numbers);
 
         LinkedHashSet<String> ReservedWords = new LinkedHashSet<>();
         FillReservedWords(ReservedWords);
@@ -196,14 +253,26 @@ public class lexicalAnalysis {
         LinkedHashSet<String> Identifiers = new LinkedHashSet<>();
         FillIdentifiers(Identifiers);
 
+        LinkedHashSet<String> string = new LinkedHashSet<>();
+        FillString(string);
+
+        LinkedHashSet<String> character = new LinkedHashSet<>();
+        FillCharacter(character);
+
+        LinkedHashSet<String> floatNumbers = new LinkedHashSet<>();
+        FillFloatNumbers(floatNumbers);
+
         HashSet<LinkedHashSet<String>> Alphabet = new LinkedHashSet<>();
 
         FillAlphabet(Alphabet,Separators);
         FillAlphabet(Alphabet,ReservedWords);
-        FillAlphabet(Alphabet,Numbers);
+//        FillAlphabet(Alphabet,Numbers);
         FillAlphabet(Alphabet,Operators);
         FillAlphabet(Alphabet,Comment1);
         FillAlphabet(Alphabet,Comment2);
+        FillAlphabet(Alphabet,string);
+        FillAlphabet(Alphabet,character);
+        FillAlphabet(Alphabet,floatNumbers);
         FillAlphabet(Alphabet,Identifiers);
 
         show_Edges(Alphabet);
@@ -243,11 +312,11 @@ public class lexicalAnalysis {
                 for (Integer state : S0) {
                     TreeSet<Integer> t = Transition.get(state).get(edge);
                     if (t == null) {
+                        System.out.print(" Oy, I can't colored lexem ");
                         continue;
                     }
                     S.addAll(t);
                 }
-
 //                System.out.printf("Word: %s \n", edge);
 //                System.out.print("States:");
                 for (Integer elem : S) {
@@ -255,7 +324,6 @@ public class lexicalAnalysis {
 //                    System.out.print("\n");
                     String message=" ";
                     switch(elem){
-
                         case 0: message=edge;
                             break;
                         case 1: message= ANSI_RED + edge + ANSI_RESET ;
@@ -264,32 +332,27 @@ public class lexicalAnalysis {
                             break;
                         case 3: message= ANSI_CYAN + edge + ANSI_RESET ;
                             break;
-                        case 4: message= ANSI_BLUE + edge + ANSI_RESET;
+                        case 4: message= ANSI_CYAN + edge + ANSI_RESET;
                             break;
-                        case 5: message= ANSI_BLUE + edge + ANSI_RESET ;
+                        case 5: message= ANSI_CYAN + edge + ANSI_RESET ;
                             break;
-                        case 6: message= ANSI_BLUE + edge + ANSI_RESET ;
+                        case 6: message= ANSI_CYAN + edge + ANSI_RESET ;
                             break;
-                        case 7: message= ANSI_BLUE + edge + ANSI_RESET;
+                        case 7: message= ANSI_MAGENTA + edge + ANSI_RESET;
                             break;
-                        case 8: message= ANSI_YELLOW + edge + ANSI_RESET;
+                        case 8: message= ANSI_MAGENTA + edge + ANSI_MAGENTA;
+                            break;
+                        case 9: message= ANSI_MAGENTA + edge + ANSI_MAGENTA;
+                            break;
+                        case 10: message= ANSI_MAGENTA + edge + ANSI_MAGENTA;
+                            break;
+                        case 11: message= ANSI_YELLOW + edge + ANSI_MAGENTA;
+                            break;
+                        case 12: message= ANSI_YELLOW + edge + ANSI_MAGENTA;
+                            break;
+                        case 13: message= ANSI_BLUE + edge + ANSI_MAGENTA;
                             break;
 
-//                        case 0: message="Word " + edge + "is a separator! ";
-//                            break;
-//                        case 1:
-//                            message="Word " + ANSI_RED + edge + ANSI_RESET + " is reserved! ";
-//                            break;
-//                        case 2: message="Word is a " + ANSI_BLUE + edge + ANSI_RESET + " number! ";
-//                            break;
-//                        case 3: message="Word is an " + ANSI_CYAN + edge + ANSI_RESET + " operator! ";
-//                            break;
-//                        case 4: message="Comment " + ANSI_GREEN + edge + ANSI_RESET + "! " ;
-//                            break;
-//                        case 5: message="End of comment " + ANSI_GREEN + edge + ANSI_RESET + "! ";
-//                            break;
-//                        case 6: message="Part of identificator " + ANSI_YELLOW + edge + ANSI_RESET + "! ";
-//                            break;
                     }
                     System.out.print(message);
                 }
@@ -302,11 +365,6 @@ public class lexicalAnalysis {
                     }
                 }
             }
-
-            char test = 'A';
-            int i =1;
-            String lll= String.valueOf((char)(test+i));
-            System.out.println(lll);
 
         } catch (FileNotFoundException e) {
             System.out.format("Could not find file '%s'.%n", file);
